@@ -6,7 +6,7 @@
    ========================================================= */
 
 /* ⬇⬇⬇  PASTE YOUR APPS SCRIPT /exec URL HERE  ⬇⬇⬇ */
-const ENDPOINT = "https://script.google.com/macros/s/XXXXXXXXXXXXXXXXXXXX/exec";
+const ENDPOINT = "https://script.google.com/macros/s/AKfycbxXE1-M73_vwadxe2zkVP6WS7CK7o3aM6Sy8L8y_3Da0MwGvBm-HYoVMW3WJCsHyZwu0g/exec";
 
 const MAX_INPUT   = 15 * 1024 * 1024;             // max file the user may pick
 const MAX_EDGE    = 2000;                         // longest side after downscale, px
