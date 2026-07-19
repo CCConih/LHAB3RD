@@ -6,10 +6,12 @@
    ========================================================= */
 
 /* ⬇⬇⬇  PASTE YOUR APPS SCRIPT /exec URL HERE  ⬇⬇⬇ */
-const ENDPOINT = "https://script.google.com/macros/s/AKfycbxXE1-M73_vwadxe2zkVP6WS7CK7o3aM6Sy8L8y_3Da0MwGvBm-HYoVMW3WJCsHyZwu0g/exec";
+const ENDPOINT = "https://script.google.com/macros/s/XXXXXXXXXXXXXXXXXXXX/exec";
 
-const MAX_BYTES   = 2 * 1024 * 1024;              // 2 MB
-const ALLOWED     = ["image/jpeg","image/png","image/webp","image/heic","image/heif"];
+const MAX_INPUT   = 15 * 1024 * 1024;             // max file the user may pick
+const MAX_EDGE    = 2000;                         // longest side after downscale, px
+const TARGET_BYTES= 1.6 * 1024 * 1024;            // aim to land under this
+const ALLOWED     = ["image/jpeg","image/png","image/webp"];
 
 const $ = (id) => document.getElementById(id);
 
@@ -27,7 +29,11 @@ const submitBtn   = $("submit-btn");
 const statusEl    = $("form-status");
 const successEl   = $("success");
 
+const fileMeta  = $("file-meta");
+
 let selectedFile = null;
+let originalName = "";
+let previewURL   = null;
 
 /* ---------- helpers ---------- */
 function showError(id, msg){
@@ -40,37 +46,114 @@ function clearErrors(){
   statusEl.textContent = "";
 }
 
+/* ---------- image downscaling ----------
+   Big phone photos are re-encoded in the browser before upload:
+   longest edge capped at MAX_EDGE, JPEG quality stepped down until
+   the result fits under TARGET_BYTES. Keeps uploads fast on mobile
+   data and keeps Drive tidy — no visible loss at livestream scale. */
+
+async function loadBitmap(file){
+  // imageOrientation honours EXIF rotation from phone cameras
+  if (window.createImageBitmap){
+    try { return await createImageBitmap(file, { imageOrientation: "from-image" }); }
+    catch(e){ /* fall through */ }
+  }
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload  = () => { URL.revokeObjectURL(url); resolve(img); };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Gagal membaca gambar.")); };
+    img.src = url;
+  });
+}
+
+function canvasToBlob(canvas, quality){
+  return new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", quality));
+}
+
+async function downscale(file){
+  const bmp = await loadBitmap(file);
+  const w0 = bmp.width, h0 = bmp.height;
+  const scale = Math.min(1, MAX_EDGE / Math.max(w0, h0));
+  const w = Math.round(w0 * scale), h = Math.round(h0 * scale);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "#ffffff";          // PNG transparency -> white, not black
+  ctx.fillRect(0, 0, w, h);
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(bmp, 0, 0, w, h);
+  if (bmp.close) bmp.close();
+
+  let quality = 0.85;
+  let blob = await canvasToBlob(canvas, quality);
+  while (blob && blob.size > TARGET_BYTES && quality > 0.5){
+    quality -= 0.1;
+    blob = await canvasToBlob(canvas, quality);
+  }
+  if (!blob) throw new Error("Gagal memproses gambar.");
+  return { blob, w, h, w0, h0 };
+}
+
 /* ---------- file selection ---------- */
-function setFile(file){
+async function setFile(file){
   if (!file) return;
 
   if (!ALLOWED.includes(file.type)){
     showError("file-error", "Format tidak didukung. Gunakan JPG, PNG, atau WEBP.");
     return;
   }
-  if (file.size > MAX_BYTES){
-    showError("file-error", `Ukuran file ${(file.size/1048576).toFixed(1)}MB — maksimal 2MB.`);
+  if (file.size > MAX_INPUT){
+    showError("file-error", `Ukuran file ${(file.size/1048576).toFixed(1)}MB — maksimal 15MB.`);
     return;
   }
 
   showError("file-error", "");
-  selectedFile = file;
+  dzText.textContent = "Menyiapkan foto\u2026";
+  submitBtn.disabled = true;
 
-  const url = URL.createObjectURL(file);
-  preview.src = url;
-  preview.hidden = false;
-  clearBtn.hidden = false;
-  dzText.hidden = true;
-  dropzone.classList.add("has-file");
+  try{
+    const { blob, w, h, w0, h0 } = await downscale(file);
+
+    selectedFile = new File([blob], "photo.jpg", { type: "image/jpeg" });
+    originalName = file.name;
+
+    if (previewURL) URL.revokeObjectURL(previewURL);
+    previewURL = URL.createObjectURL(blob);
+    preview.src = previewURL;
+    preview.hidden = false;
+    clearBtn.hidden = false;
+    dzText.hidden = true;
+    dropzone.classList.add("has-file");
+
+    const resized = (w !== w0 || h !== h0);
+    fileMeta.textContent =
+      `${w}\u00d7${h}px \u00b7 ${(blob.size/1024).toFixed(0)}KB` +
+      (resized ? ` (dari ${w0}\u00d7${h0}px)` : "");
+    fileMeta.hidden = false;
+
+  }catch(err){
+    console.error(err);
+    showError("file-error", "Foto tidak bisa diproses. Coba foto lain.");
+    clearFile();
+  }finally{
+    dzText.textContent = "Klik atau seret foto ke sini";
+    submitBtn.disabled = false;
+  }
 }
 
 function clearFile(){
   selectedFile = null;
+  originalName = "";
   fileInput.value = "";
+  if (previewURL){ URL.revokeObjectURL(previewURL); previewURL = null; }
   preview.hidden = true;
   preview.removeAttribute("src");
   clearBtn.hidden = true;
   dzText.hidden = false;
+  fileMeta.hidden = true;
+  fileMeta.textContent = "";
   dropzone.classList.remove("has-file");
 }
 
@@ -128,7 +211,7 @@ form.addEventListener("submit", async (e) => {
       name:     nameInput.value.trim(),
       story:    story.value.trim(),
       consent:  true,
-      fileName: selectedFile.name,
+      fileName: originalName || selectedFile.name,
       mimeType: selectedFile.type,
       fileSize: selectedFile.size,
       fileData: await toBase64(selectedFile),
