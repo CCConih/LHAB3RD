@@ -117,7 +117,7 @@ form.addEventListener("submit", async (e) => {
   if (!selectedFile){ showError("file-error", "Pilih satu foto dulu ya."); ok = false; }
   if (!nameInput.value.trim()){ showError("name-error", "Nama wajib diisi."); ok = false; }
   if (!story.value.trim()){ showError("story-error", "Ceritakan sedikit tentang fotomu."); ok = false; }
-  if (!consent.checked){ showError("consent-error", "Kamu harus menyetujui ketentuan penggunaan foto."); ok = false; }
+  if (!consent.checked){ showError("consent-error", consent.disabled ? "Baca ketentuan & consent dulu ya." : "Kamu harus menyetujui ketentuan penggunaan foto."); ok = false; }
   if (!ok) return;
 
   submitBtn.disabled = true;
@@ -157,6 +157,65 @@ form.addEventListener("submit", async (e) => {
     statusEl.textContent = "Maaf, terjadi kesalahan. Coba lagi sebentar lagi.";
   }finally{
     submitBtn.disabled = false;
+  }
+});
+
+/* =========================================================
+   TERMS LIGHTBOX — must be read before consent can be ticked
+   ========================================================= */
+const termsModal = $("terms");
+const termsBody  = $("terms-body");
+const termsAgree = $("terms-agree");
+const termsNudge = $("terms-nudge");
+let lastFocused = null;
+
+function openTerms(){
+  lastFocused = document.activeElement;
+  termsModal.hidden = false;
+  document.body.style.overflow = "hidden";
+  termsBody.scrollTop = 0;
+  checkScrolled();
+  termsBody.focus();
+}
+
+function closeTerms(){
+  termsModal.hidden = true;
+  document.body.style.overflow = "";
+  if (lastFocused) lastFocused.focus();
+}
+
+/* enable "Saya Setuju" only once the text has been scrolled through
+   (or if it fits without scrolling at all) */
+function checkScrolled(){
+  const atBottom = termsBody.scrollTop + termsBody.clientHeight >= termsBody.scrollHeight - 8;
+  if (atBottom){
+    termsAgree.disabled = false;
+    termsNudge.classList.add("is-done");
+  }
+}
+
+$("open-terms").addEventListener("click", (e) => { e.preventDefault(); openTerms(); });
+termsBody.addEventListener("scroll", checkScrolled);
+$("terms-close").addEventListener("click", closeTerms);
+
+termsAgree.addEventListener("click", () => {
+  consent.disabled = false;
+  consent.checked  = true;
+  showError("consent-error", "");
+  closeTerms();
+});
+
+/* backdrop click + Esc */
+termsModal.addEventListener("click", (e) => { if (e.target === termsModal) closeTerms(); });
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !termsModal.hidden) closeTerms();
+});
+
+/* if they click the disabled checkbox, open the terms instead */
+document.querySelector(".consent").addEventListener("click", (e) => {
+  if (consent.disabled && e.target.id !== "open-terms"){
+    e.preventDefault();
+    openTerms();
   }
 });
 
