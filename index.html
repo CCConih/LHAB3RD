@@ -88,10 +88,10 @@
       </div>
 
       <!-- CONSENT -->
-      <label class="consent">
-        <input type="checkbox" id="consent" name="consent" required>
+      <label class="consent" for="consent">
+        <input type="checkbox" id="consent" name="consent" required disabled>
         <span class="consent__box" aria-hidden="true"></span>
-        <span class="consent__text">Saya sudah membaca &amp; menyetujui <a href="terms.html" target="_blank" rel="noopener">ketentuan &amp; consent</a> penggunaan foto ini.</span>
+        <span class="consent__text">Saya sudah membaca &amp; menyetujui <button type="button" class="consent__link" id="open-terms">ketentuan &amp; consent</button> penggunaan foto ini.</span>
       </label>
       <p class="field__error field__error--center" id="consent-error" hidden></p>
 
@@ -112,16 +112,41 @@
   <div class="footer__meta">
     <span>&copy; sepuluh dua empat, 2026</span>
     <a href="mailto:booking@hindia1024.com">booking@hindia1024.com</a>
-    <a href="privacy.html">Privacy Notice</a>
+    <a href="https://www.hindia1024.com/privacy-notices" target="_blank" rel="noopener">Privacy Notice</a>
   </div>
   <nav class="footer__social" aria-label="Social media">
-    <a href="https://instagram.com/hindia1024" target="_blank" rel="noopener">INSTAGRAM</a>
-    <a href="https://twitter.com/hindia1024" target="_blank" rel="noopener">TWITTER</a>
-    <a href="https://tiktok.com/@hindia1024" target="_blank" rel="noopener">TIKTOK</a>
-    <a href="https://youtube.com/@hindia1024" target="_blank" rel="noopener">YOUTUBE</a>
-    <a href="https://open.spotify.com/artist/6QLpFmZfIgYnrxfCsudtn6" target="_blank" rel="noopener">SPOTIFY</a>
+    <a href="https://instagram.com/wordfangs" target="_blank" rel="noopener">INSTAGRAM</a>
+    <a href="https://twitter.com/wordfangs" target="_blank" rel="noopener">TWITTER</a>
+    <a href="https://www.tiktok.com/@bukanwordfangs" target="_blank" rel="noopener">TIKTOK</a>
+    <a href="https://www.youtube.com/@Hindia" target="_blank" rel="noopener">YOUTUBE</a>
+    <a href="https://open.spotify.com/artist/51kyrUsAVqUBcoDEMFkX12" target="_blank" rel="noopener">SPOTIFY</a>
   </nav>
 </footer>
+
+<!-- ============ TERMS LIGHTBOX ============ -->
+<div class="terms" id="terms" hidden role="dialog" aria-modal="true" aria-labelledby="terms-title">
+  <div class="terms__card">
+    <h2 class="terms__title" id="terms-title">Ketentuan &amp; Consent Penggunaan Foto</h2>
+
+    <div class="terms__body" id="terms-body" tabindex="0">
+      <p>Dengan mengunggah foto pada halaman ini, kamu menyatakan bahwa:</p>
+      <ul>
+        <li>Foto merupakan milikmu atau kamu punya hak untuk membagikannya.</li>
+        <li>Kamu mengizinkan foto &amp; teks digunakan dalam LHAB 3rd Anniversary Livestream serta materi terkait.</li>
+        <li>Foto tidak mengandung konten yang melanggar hukum, kekerasan, atau menyinggung pihak lain.</li>
+        <li>Kamu memahami foto yang terkirim bersifat permanen dan dapat ditampilkan secara publik.</li>
+      </ul>
+      <p>Data yang kami kumpulkan hanya digunakan untuk keperluan acara ini. Selengkapnya di <a href="https://www.hindia1024.com/privacy-notices" target="_blank" rel="noopener">Privacy Notice</a>.</p>
+    </div>
+
+    <p class="terms__nudge" id="terms-nudge">Gulir sampai bawah untuk melanjutkan.</p>
+
+    <div class="terms__actions">
+      <button type="button" class="terms__btn terms__btn--primary" id="terms-agree" disabled>Saya Setuju</button>
+      <button type="button" class="terms__btn" id="terms-close">Tutup</button>
+    </div>
+  </div>
+</div>
 
 <!-- ============ SUCCESS OVERLAY ============ -->
 <div class="success" id="success" hidden>
