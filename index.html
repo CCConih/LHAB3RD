@@ -60,15 +60,16 @@
       <!-- UPLOAD FOTO -->
       <div class="field">
         <img class="label-img label-upload" src="ASSETS/UPLOAD_FOTO.svg" alt="Upload Foto">
-        <p class="field__hint">max 2MB</p>
+        <p class="field__hint">JPG, PNG, atau WEBP &middot; max 15MB<br>foto besar akan otomatis dikecilkan</p>
 
         <div id="dropzone" class="dropzone" tabindex="0" role="button"
              aria-label="Klik atau seret foto ke sini">
-          <input type="file" id="file-input" name="photo" accept="image/jpeg,image/png,image/webp,image/heic" hidden>
+          <input type="file" id="file-input" name="photo" accept="image/jpeg,image/png,image/webp" hidden>
           <span class="dropzone__text" id="dropzone-text">Klik atau seret foto ke sini</span>
           <img id="preview" class="dropzone__preview" alt="" hidden>
           <button type="button" id="clear-file" class="dropzone__clear" hidden aria-label="Hapus foto">&times;</button>
         </div>
+        <p class="field__meta" id="file-meta" hidden></p>
         <p class="field__error" id="file-error" hidden></p>
       </div>
 
