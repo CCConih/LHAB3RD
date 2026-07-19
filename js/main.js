@@ -6,7 +6,7 @@
    ========================================================= */
 
 /* ⬇⬇⬇  PASTE YOUR APPS SCRIPT /exec URL HERE  ⬇⬇⬇ */
-const ENDPOINT = "https://script.google.com/macros/s/XXXXXXXXXXXXXXXXXXXX/exec";
+const ENDPOINT = "https://script.google.com/macros/s/AKfycbxXE1-M73_vwadxe2zkVP6WS7CK7o3aM6Sy8L8y_3Da0MwGvBm-HYoVMW3WJCsHyZwu0g/exec";
 
 const MAX_BYTES   = 2 * 1024 * 1024;              // 2 MB
 const ALLOWED     = ["image/jpeg","image/png","image/webp","image/heic","image/heif"];
